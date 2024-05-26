@@ -47,7 +47,12 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+Seven_Seg *seven_seg;
+uint8_t num;
 
+CAN_TxHeaderTypeDef   TxHeader;
+uint8_t               TxData[8];
+uint32_t              TxMailbox;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -58,7 +63,35 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan) {
+  HAL_GPIO_WritePin(DEBUG_INDICATOR_1_GPIO_Port, DEBUG_INDICATOR_1_Pin, GPIO_PIN_SET);
+}
 
+
+void Button_0_Handler(GPIO_PinState state) {
+  if (state == GPIO_PIN_RESET) {
+      Seven_Seg_Write_Integer(seven_seg, ++num);
+        TxHeader.IDE = CAN_ID_STD;
+        TxHeader.StdId = 0x5a5;
+        TxHeader.RTR = CAN_RTR_DATA;
+        TxHeader.DLC = 2;
+
+        TxData[0] = 50;
+        TxData[1] = 0xAA;
+        if (HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK) {
+          HAL_GPIO_WritePin(DEBUG_INDICATOR_0_GPIO_Port, DEBUG_INDICATOR_0_Pin, GPIO_PIN_SET);
+        }
+
+        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_9);
+
+  }
+}
+
+void Button_1_Handler(GPIO_PinState state) {
+  if (state == GPIO_PIN_RESET) {
+      __NOP();
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -90,43 +123,35 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_CAN1_Init();
   MX_TIM3_Init();
-  MX_SPI3_Init();
+  MX_SPI1_Init();
+  MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
-  Shift_Reg *shift_reg = Shift_Reg_SPI_SW_NSS_Init(&hspi3, SEVEN_SEG_NSS_GPIO_Port, SEVEN_SEG_NSS_Pin);
+  HAL_CAN_Start(&hcan1);
+  HAL_GPIO_WritePin(CAN1_STBY_GPIO_Port, CAN1_STBY_Pin, GPIO_PIN_RESET);
 
-  /*Shift_Reg *shift_reg = Shift_Reg_GPIO_Init(SPI3_SCK_GPIO_Port, SPI3_SCK_Pin,
-                                             SEVEN_SEG_NSS_GPIO_Port, SEVEN_SEG_NSS_Pin,
-                                             SPI3_MOSI_GPIO_Port, SPI3_MOSI_Pin);*/
+  Shift_Reg *shift_reg = Shift_Reg_SPI_SW_NSS_Init(&hspi1, DEBUG_CS_GPIO_Port, DEBUG_CS_Pin);
 
-  Seven_Seg *seven_seg = Seven_Seg_Init(shift_reg);
+  seven_seg = Seven_Seg_Init(shift_reg);
+  num = 0;
+  Seven_Seg_Write_Integer(seven_seg, num);
 
-  for (int i = 0; i < 100; i++) {
-      Seven_Seg_Write_Integer(seven_seg, i);
-      HAL_Delay(100);
+//  for (int i = 0; i < 100; i++) {
+//      Seven_Seg_Write_Integer(seven_seg, i);
+//      HAL_Delay(100);
+//
+//  }
 
-  }
 
-
-  GPIO_TypeDef *port = DEBUG_LED_0_GPIO_Port;
-  uint16_t      pin  = DEBUG_LED_0_Pin;
-  void Debug_Button_1_Handler(GPIO_PinState state) {
-    HAL_GPIO_TogglePin(port, pin);
-    /**
-    if (state == GPIO_PIN_SET) {
-        Seven_Seg_Write(seven_seg, 0xAAAA);
-    }
-    else {
-        Seven_Seg_Write(seven_seg, 0x5555);
-    }
-    */
-  }
   Init_Button_Begin(&htim3, 50);
-  Init_Button(DEBUG_BUTTON_1_GPIO_Port,
-	      DEBUG_BUTTON_1_Pin,
+  Init_Button(DEBUG_BUTTON_0_GPIO_Port,
+	      DEBUG_BUTTON_0_Pin,
 	      GPIO_PIN_SET,
-	      Debug_Button_1_Handler);
+	      Button_0_Handler);
+  Init_Button(DEBUG_BUTTON_1_GPIO_Port,
+          DEBUG_BUTTON_1_Pin,
+          GPIO_PIN_SET,
+          Button_1_Handler);
   Init_Button_Finish();
   /* USER CODE END 2 */
 
@@ -159,10 +184,15 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 72;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 3;
+  RCC_OscInitStruct.PLL.PLLR = 2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -172,12 +202,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }

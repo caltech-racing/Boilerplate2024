@@ -71,13 +71,10 @@ Shift_Reg *Shift_Reg_SPI_SW_NSS_Init(SPI_HandleTypeDef *hspi,
   }
 
   // ensure that SPI settings are correct
-  if (!(hspi->Instance->CR1 & SPI_CR1_MSTR)    ||
-       (hspi->Instance->CR1 & SPI_CR1_RXONLY)  ||
-       (hspi->Instance->CR1 & SPI_CR1_DFF)     ||
-       (hspi->Instance->CR1 & SPI_CR1_CPHA)    ||
-      !(hspi->Instance->CR1 & SPI_CR1_SSM)     ||
-       (hspi->Instance->CR1 & SPI_CR1_LSBFIRST)||
-       (hspi->Instance->CR1 & SPI_CR1_CRCEN)) {
+  uint16_t should_be_unset = SPI_CR1_RXONLY | SPI_CR1_DFF | SPI_CR1_CPHA | SPI_CR1_LSBFIRST | SPI_CR1_CRCEN;
+  uint16_t should_be_set   = SPI_CR1_MSTR | SPI_CR1_SSM;
+  if ( ( hspi->Instance->CR1 & should_be_set   ) != should_be_set ||
+       ( hspi->Instance->CR1 & should_be_unset ) != 0 ) {
       return NULL;
   }
 

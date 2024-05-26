@@ -76,6 +76,8 @@ Button *Init_Button(GPIO_TypeDef *port, uint16_t pin, GPIO_PinState init_state, 
       return NULL;
   }
 
+  // TODO: set to rising/falling trigger
+
   // add button to array
   button_mask |= pin;
   buttons[NUM_BUTTONS] = (Button){ Port: port, Pin: pin, last_state: init_state, callback: cb};

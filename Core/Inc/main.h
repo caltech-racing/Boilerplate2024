@@ -57,18 +57,38 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define DEBUG_LED_0_Pin GPIO_PIN_0
-#define DEBUG_LED_0_GPIO_Port GPIOA
-#define DEBUG_BUTTON_0_Pin GPIO_PIN_1
-#define DEBUG_BUTTON_0_GPIO_Port GPIOA
-#define DEBUG_BUTTON_0_EXTI_IRQn EXTI1_IRQn
-#define DEBUG_BUTTON_1_Pin GPIO_PIN_2
-#define DEBUG_BUTTON_1_GPIO_Port GPIOA
-#define DEBUG_BUTTON_1_EXTI_IRQn EXTI2_IRQn
-#define DEBUG_LED_1_Pin GPIO_PIN_3
-#define DEBUG_LED_1_GPIO_Port GPIOA
-#define SEVEN_SEG_NSS_Pin GPIO_PIN_15
-#define SEVEN_SEG_NSS_GPIO_Port GPIOA
+#define DEBUG_CS_Pin GPIO_PIN_4
+#define DEBUG_CS_GPIO_Port GPIOA
+#define DEBUG_SCLK_Pin GPIO_PIN_5
+#define DEBUG_SCLK_GPIO_Port GPIOA
+#define DEBUG_MOSI_Pin GPIO_PIN_7
+#define DEBUG_MOSI_GPIO_Port GPIOA
+#define GPIO8_Pin GPIO_PIN_12
+#define GPIO8_GPIO_Port GPIOE
+#define GPIO7_Pin GPIO_PIN_14
+#define GPIO7_GPIO_Port GPIOE
+#define GPIO6_Pin GPIO_PIN_10
+#define GPIO6_GPIO_Port GPIOB
+#define DEBUG_BUTTON_1_Pin GPIO_PIN_12
+#define DEBUG_BUTTON_1_GPIO_Port GPIOB
+#define DEBUG_BUTTON_1_EXTI_IRQn EXTI15_10_IRQn
+#define DEBUG_INDICATOR_1_Pin GPIO_PIN_13
+#define DEBUG_INDICATOR_1_GPIO_Port GPIOB
+#define DEBUG_INDICATOR_0_Pin GPIO_PIN_14
+#define DEBUG_INDICATOR_0_GPIO_Port GPIOB
+#define DEBUG_BUTTON_0_Pin GPIO_PIN_15
+#define DEBUG_BUTTON_0_GPIO_Port GPIOB
+#define DEBUG_BUTTON_0_EXTI_IRQn EXTI15_10_IRQn
+#define GPIO4_Pin GPIO_PIN_8
+#define GPIO4_GPIO_Port GPIOD
+#define GPIO3_Pin GPIO_PIN_9
+#define GPIO3_GPIO_Port GPIOD
+#define GPIO2_Pin GPIO_PIN_10
+#define GPIO2_GPIO_Port GPIOD
+#define GPIO1_Pin GPIO_PIN_11
+#define GPIO1_GPIO_Port GPIOD
+#define CAN1_STBY_Pin GPIO_PIN_15
+#define CAN1_STBY_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 
